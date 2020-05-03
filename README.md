@@ -1,1 +1,1 @@
-# solar-deeplearning
+# Solar-deeplearning
