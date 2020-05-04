@@ -10,7 +10,8 @@ This repository is an improvement method of [Deep-Solar-Eye](https://deep-solar-
 This project is compiled on Visual Studio 2019
 ## Usage
 * If Visual Studio 2019 is available, please load the .sln file, then run SolarEye_main.py.
-* If you don't have Visual Studio 2019, try any way you want to run SolarEye_main.py.\\
+* If you don't have Visual Studio 2019, try any way you want to run SolarEye_main.py.
+
 Cuda is used, please check if cuda can be used on running GPU: [Cuda support](https://developer.nvidia.com/cuda-gpus)
 ## Data
 A first-of-its-kind dataset, Solar Panel Soiling Image Dataset, comprising of 45,754 images of solar panels with power loss labels. From [Deep-Solar-Eye](https://deep-solar-eye.github.io/)
