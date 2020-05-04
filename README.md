@@ -7,7 +7,7 @@ This repository is an improvement method of [Deep-Solar-Eye](https://deep-solar-
 * [Numpy](https://numpy.org/)
 * [Pytorch](https://pytorch.org/)
 ### IDE
-This project compiled on Visual Studio 2019
+This project is compiled on Visual Studio 2019
 ## Usage
 
 Cuda is used, please check if cuda can be used on running GPU: [Cuda support](https://developer.nvidia.com/cuda-gpus)
