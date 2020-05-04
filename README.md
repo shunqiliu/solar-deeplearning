@@ -11,8 +11,7 @@ This project is compiled on Visual Studio 2019
 ## Usage
 * If Visual Studio 2019 is available, please load the .sln file, then run SolarEye_main.py.
 * If you don't have Visual Studio 2019, try any way you want to run SolarEye_main.py.
-
-Cuda is used, please check if cuda can be used on running GPU: [Cuda support](https://developer.nvidia.com/cuda-gpus)
+* Cuda is used, please check if cuda can be used on running GPU: [Cuda support](https://developer.nvidia.com/cuda-gpus). If your GPU is unavailable, we reconmend you run the .ipynb file on colab.
 ## Data
 A first-of-its-kind dataset, Solar Panel Soiling Image Dataset, comprising of 45,754 images of solar panels with power loss labels. From [Deep-Solar-Eye](https://deep-solar-eye.github.io/)
 Data has already been processed to binary data, please download from [Binary dataset](https://drive.google.com/file/d/1ygQYgyp5mXHbRz1nAW3ND93Bh6FbBCth/view?usp=sharing). Extract file, and put all of them to the same directory of .py files.
