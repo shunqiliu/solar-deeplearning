@@ -7,4 +7,4 @@ This repository is an improvement method of [Deep-Solar-Eye](https://deep-solar-
 * [Pytorch](https://pytorch.org/)
 ## Dataset
 A first-of-its-kind dataset, Solar Panel Soiling Image Dataset, comprising of 45,754 images of solar panels with power loss labels. From [Deep-Solar-Eye](https://deep-solar-eye.github.io/)
-## Code Instruction
+## Usage
