@@ -33,7 +33,7 @@ def error(net,test,etype='L1'):
 
 def qrloss(net,test):
     """
-    Metrics for Pinball loss on original network. Instruction can be found in README.md
+    Metrics for Pinball loss on original network. Instruction can be found in Report 2
     Input:
         net:trained neaural network
         test:test data
