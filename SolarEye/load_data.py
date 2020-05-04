@@ -10,21 +10,21 @@ def load_pic():
     Load pictures
     Shape: (45754, 3, 192, 192)--(Batch size, Channel, Height, Width)
     """
-    return np.load('data_npy/image.npy',mmap_mode='r')
+    return np.load('image.npy',mmap_mode='r')
 
 def load_label():
     """
     Load power loss
     Shape: (45754,)--(Batch size)
     """
-    return np.load('data_npy/label.npy',mmap_mode='r')
+    return np.load('label.npy',mmap_mode='r')
 
 def load_feats():
     """
     Load environmental features
     Shape:(45754,4)--(Batch size,(Hour,Min,Sec,Irradiance level))
     """
-    return np.load('data_npy/feats.npy',mmap_mode='r')
+    return np.load('feats.npy',mmap_mode='r')
 
 def load_all():
     """
