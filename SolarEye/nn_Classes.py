@@ -22,6 +22,7 @@ class ImpactNet_A(nn.Module):
     def __init__(self):
         super().__init__()
         #Define dissembled operators
+        self.dropout = nn.Dropout(p=0.5)
         self.relu=nn.ReLU()
         self.conv1=nn.Conv2d(3,16,7,padding=3)
         self.pool=nn.AvgPool2d(3)
@@ -92,15 +93,15 @@ class ImpactNet_A(nn.Module):
         au=self.relu(self.rcu5_conv(au)+self.rcu5(self.rcu5_conv(au)))#6th layer: residual convolution unit
         au=self.pool(au)#7th layer: maxpool 2d
         au=au.view(au.shape[0],-1)
-        au=self.relu(self.fu(au))
-        au=self.relu(self.fc0(au))
+        au=self.relu(self.dropout(self.fu(au)))
+        au=self.relu(self.dropout(self.fc0(au)))
 
-        #Full Connect network
-        ef=self.relu(self.fc1(ef))
-        ef=self.relu(self.fc2(ef))
-    
+        #Fully Connect network
+        ef=self.relu(self.dropout(self.fc1(ef)))
+        ef=self.relu(self.dropout(self.fc2(ef)))
+
         o=torch.cat((ef,au),1)
-        o=self.relu(self.fc3(o))
+        o=self.relu(self.dropout(self.fc3(o)))
         o=self.fc4(o)
 
         return o
@@ -110,6 +111,7 @@ class NewNet(nn.Module):
     def __init__(self):
         super().__init__()
         #Define dissembled operators
+        self.dropout = nn.Dropout(p=0.5)
         self.relu=nn.ReLU()
         self.conv1=nn.Conv2d(3,16,7,padding=3)
         self.pool=nn.AvgPool2d(3)
@@ -180,15 +182,15 @@ class NewNet(nn.Module):
         au=self.relu(self.rcu5_conv(au)+self.rcu5(self.rcu5_conv(au)))#6th layer: residual convolution unit
         au=self.pool(au)#7th layer: maxpool 2d
         au=au.view(au.shape[0],-1)
-        au=self.relu(self.fu(au))
-        au=self.relu(self.fc0(au))
+        au=self.relu(self.dropout(self.fu(au)))
+        au=self.relu(self.dropout(self.fc0(au)))
 
-        #Full Connect network
-        ef=self.relu(self.fc1(ef))
-        ef=self.relu(self.fc2(ef))
-    
+        #Fully Connect network
+        ef=self.relu(self.dropout(self.fc1(ef)))
+        ef=self.relu(self.dropout(self.fc2(ef)))
+
         o=torch.cat((ef,au),1)
-        o=self.relu(self.fc3(o))
+        o=self.relu(self.dropout(self.fc3(o)))
         o=self.fc4(o)
 
         return o
