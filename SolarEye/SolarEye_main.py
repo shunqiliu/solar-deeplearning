@@ -24,7 +24,7 @@ def Pin_origin():
     criteria=nn.CrossEntropyLoss()
     for ii in tqdm(range(epochs)):
         if ii%30==0:
-            sgd=torch.optim.SGD(net.parameters(),lr,0.9,weight_decay= 0.0005)
+            sgd=torch.optim.SGD(net.parameters(),lr)
             lr=lr*0.1
         for j,data in enumerate(train_dataloader):
             i,p,f=data['image'].float().cuda(),data['power'],data['feats'].float().cuda()
@@ -52,7 +52,7 @@ def Pin_origin():
     plt.figure()
     plt.title('Pinball Loss for original network')
     plt.xlabel('Time')
-    plt.ylabel('Error %')
+    plt.ylabel('Error')
     plt.plot(t,qrlos)
 
     """
@@ -80,16 +80,17 @@ def Pin_origin():
 
 def Pin_modify():
     #train Resnet
-    epochs=90
-    lr=0.01
+    epochs=30
+    lr=0.00001
 
     pinball_loss=[]
     net=nn_Classes.NewNet()
     net.cuda()
     for ii in tqdm(range(epochs)):
-        if ii%30==0:
-            sgd=torch.optim.SGD(net.parameters(),lr,0.9,weight_decay= 0.0005)
+        if ii%10==0:
+            sgd=torch.optim.SGD(net.parameters(),lr)
             lr=lr*0.1
+        net.train()
         for j,data in (enumerate(train_dataloader)):
             i,p,f=data['image'].float().cuda(),data['power'].float().cuda(),data['feats'].float().cuda()
             p=p.view(-1,1)
@@ -100,6 +101,7 @@ def Pin_modify():
             loss=metric.pin_ball_loss(p,out)
             loss.backward()
             sgd.step()
+        net.eval()
         with torch.no_grad():
             pinball_loss.append(metric.compute_test_loss(net,test))
 
@@ -108,7 +110,7 @@ def Pin_modify():
     plt.figure()
     plt.title('Pinball loss for modified network')
     plt.xlabel('Time')
-    plt.ylabel('Error %')
+    plt.ylabel('Error')
     plt.plot(t,pinball_loss)
 
     plt.show()
