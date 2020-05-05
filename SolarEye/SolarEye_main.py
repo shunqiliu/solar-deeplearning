@@ -12,8 +12,8 @@ import data_pre
 
 def Pin_origin():
     #train Resnet
-    epochs=90
-    lr=0.01
+    epochs=30
+    lr=0.00001
 
     belos=[]
     mselos=[]
@@ -23,7 +23,7 @@ def Pin_origin():
     net.cuda()
     criteria=nn.CrossEntropyLoss()
     for ii in tqdm(range(epochs)):
-        if ii%30==0:
+        if ii%10==0:
             sgd=torch.optim.SGD(net.parameters(),lr)
             lr=lr*0.1
         for j,data in enumerate(train_dataloader):
