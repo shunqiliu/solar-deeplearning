@@ -5,126 +5,119 @@ import torch
 from torch.nn import functional as F
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-import nn_Classes
-import load_data
-import metric
-import data_pre
+from nn_Classes import *
+from metric import *
+import os
 
-def Pin_origin():
-    #train Resnet
-    epochs=30
-    lr=0.00001
+def data_pre():
+    #Data prepare
+    print("\n Data prepare")
+    pim=os.listdir("../PanelImages/")
+    pvpl=[]
+    enF=[]
+    for name in pim:
+        str=name.replace('.jpg','').split('_')
+        s=[float(str[4]),float(str[6]),float(str[8]),float(str[-1]),float(str[-3])]
+        pvpl.append(s[-1])
+        enF.append(s[:4])
+    print("\tfinished")
+    return np.array(pim),np.array(pvpl),np.array(enF)
 
-    belos=[]
-    mselos=[]
-    l1los=[]
-    qrlos=[]
-    net=nn_Classes.ImpactNet_A()
-    net.cuda()
-    criteria=nn.CrossEntropyLoss()
+def data_load(imgdir,pvpl,Env):
+    #load data
+    print("\n load data")
+    index=np.array(list(range(45754)))
+    np.random.shuffle(index)
+    indr=index[:27537]
+    indd=index[27537:36645]
+    indt=index[36645:]
+
+    train=SolarSet(imgdir[indr],pvpl[indr],Env[indr])
+    test=SolarSet(imgdir[indt],pvpl[indt],Env[indt])
+    dev=SolarSet(imgdir[indd],pvpl[indd],Env[indd])
+
+    train_loader=DataLoader(train, 64,shuffle=True,num_workers=5)
+    test_loader=DataLoader(test, 64,shuffle=True,num_workers=5)
+    dev_loader=DataLoader(dev, 64,shuffle=True,num_workers=5)
+    print("\tfinished")
+    return train_loader,test_loader,dev_loader
+
+def train_impactnet(train,test,dev):
+    return
+
+def train_SolarQRNN(train,test,dev):
+    #train SolarQRNN
+    print("\n train SolarQRNN")
+    epochs=90
+    lr=0.001
+
+    pinball_loss=[]
+    train_loss=[]
+
+    Nnet=SolarQRNN()
+    Nnet.cuda()
     for ii in tqdm(range(epochs)):
-        if ii%10==0:
-            sgd=torch.optim.SGD(net.parameters(),lr)
-            lr=lr*0.1
-        for j,data in enumerate(train_dataloader):
-            i,p,f=data['image'].float().cuda(),data['power'],data['feats'].float().cuda()
-            p=(p*100//12.5).long().cuda()
-            sgd.zero_grad()
-            out=net(i,f)
-            loss=criteria(out,p)
-            loss.backward()
-            sgd.step()
-        with torch.no_grad():
-            #Pinball loss
-            qrlos.append(metric.qrloss(net,test))
+      if ii%30==0:
+        sgd=torch.optim.SGD(Nnet.parameters(),lr)
+        lr=lr*0.1
+      Nnet.train()
+      print("\n train")
+      for j,data in (enumerate(train)):
+        i,p,f=data['image'].float().cuda(),data['pvpl'].float().cuda(),data['env'].float().cuda()
+        p=p.view(-1,1)
+        pnew=torch.ones((p.shape[0],99),dtype=float).cuda()
+        p=p*pnew*100
+        sgd.zero_grad()
+        out=Nnet(i,f)
+        loss=pin_ball_loss(p,out)
+        loss.backward()
+        sgd.step()
+      Nnet.eval()
+      print("\n test")
+      with torch.no_grad():
+        a=compute_test_loss(Nnet,test)
+        pinball_loss.append(float(a))
+        train_loss.append(float(loss))
+        print("trainloss:",float(loss),"\n","testloss:",float(a),"\n")
+    torch.save(Nnet.state_dict(), "SolarQRNN.pth")
+    print("\tfinished")
+    return train_loss,pinball_loss
 
-            """
-            #Experiment for report 1
-            belos.append(metric.error(net,test,etype='BE'))
-            mselos.append(metric.error(net,test,etype='MSE'))
-            l1los.append(metric.error(net,test,etype='L1'))
-            """
-
-    #Plot loss curve
-    t=list(range(ii+1))
-
-    #Pinball loss
+def plot(title,xlabel,ylabel,trainloss,testloss):
+    t=list(range(len(trainloss)))
     plt.figure()
-    plt.title('Pinball Loss for original network')
-    plt.xlabel('Time')
-    plt.ylabel('Error')
-    plt.plot(t,qrlos)
-
-    """
-    #Experiment for report 1
-    plt.figure()
-    plt.title('Binary error')
-    plt.xlabel('Time')
-    plt.ylabel('Error %')
-    plt.plot(t,belos)
-
-    plt.figure()
-    plt.title('MSE loss')
-    plt.xlabel('Time')
-    plt.ylabel('Error %')
-    plt.plot(t,mselos)
-
-    plt.figure()
-    plt.title('L1 loss')
-    plt.xlabel('Time')
-    plt.ylabel('Error %')
-    plt.plot(t,l1los)
-    """
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.plot(t,trainloss,c='red')
+    plt.plot(t,testloss,c='blue')
+    
+    plt.legend(["trainloss","testloss"])
 
     plt.show()
 
-def Pin_modify():
-    #train Resnet
-    epochs=30
-    lr=0.00001
-
-    pinball_loss=[]
-    net=nn_Classes.NewNet()
+def predict_SolarQRNN(test):
+    print("\nPredict")
+    net=SolarQRNN()
     net.cuda()
-    for ii in tqdm(range(epochs)):
-        if ii%10==0:
-            sgd=torch.optim.SGD(net.parameters(),lr)
-            lr=lr*0.1
-        net.train()
-        for j,data in (enumerate(train_dataloader)):
-            i,p,f=data['image'].float().cuda(),data['power'].float().cuda(),data['feats'].float().cuda()
+    net.load_state_dict(torch.load("SolarQRNN.pth"))
+    with torch.no_grad():
+        for j,data in (enumerate(test)):
+            i,p,f=data['image'].float().cuda(),data['pvpl'].float().cuda(),data['env'].float().cuda()
             p=p.view(-1,1)
             pnew=torch.ones((p.shape[0],99),dtype=float).cuda()
             p=p*pnew*100
-            sgd.zero_grad()
             out=net(i,f)
-            loss=metric.pin_ball_loss(p,out)
-            loss.backward()
-            sgd.step()
-        net.eval()
-        with torch.no_grad():
-            pinball_loss.append(metric.compute_test_loss(net,test))
-
-    #plot loss curve
-    t=list(range(ii+1))
-    plt.figure()
-    plt.title('Pinball loss for modified network')
-    plt.xlabel('Time')
-    plt.ylabel('Error')
-    plt.plot(t,pinball_loss)
-
-    plt.show()
+            print(out[10],p[10])
+            os.system("Pause")
+    print("\tfinished")
+    
 
 if __name__ == '__main__':
-    #data_pre.load_origin_pic_label_feat()          #Save the label,environmental features and images to .npy
-    assert(torch.cuda.is_available()==True,'Cuda is unavailable, please check your GPU type')
     print("Version:", torch.__version__)
+    imgdir,pvpl,Env=data_pre()
+    train,test,dev=data_load(imgdir,pvpl,Env)
+    #trainloss.testloss=train_SolarQRNN(train,test,dev)
+    #plot("","","",trainloss,testloss)
+    predict_SolarQRNN(test)
 
-    #Pre-process data (already done, no need to run it)
-    #load_origin_pic_label_feat()
-
-    #load data
-    train,test=load_data.load_set()
-    train_dataloader=DataLoader(train, 32)
-    Pin_origin()
-    Pin_modify()
